@@ -20,7 +20,7 @@ export async function GET(
     .populate("addedBy", "name")
     .lean();
 
-  const balance = transactions.reduce((acc: number, t: ITransaction) => acc + (t.type === 'AddFund' ? t.amount : -t.amount), 0);
+  const balance = transactions.reduce((acc: number, t: any) => acc + (t.type === 'AddFund' ? t.amount : -t.amount), 0);
   return NextResponse.json({ customer, stbs, transactions, balance });
 }
 
