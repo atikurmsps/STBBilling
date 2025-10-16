@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { Search, X } from "lucide-react";
 
 type Customer = {
   _id: string;
@@ -22,6 +23,7 @@ export default function CustomersPage() {
   const [currentCustomer, setCurrentCustomer] = useState<Customer | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", address: "" });
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const load = async () => {
     const res = await fetch("/api/customers", { cache: "no-store" });
@@ -74,11 +76,57 @@ export default function CustomersPage() {
     }
   };
 
+  // Filter customers based on search term
+  const filteredCustomers = useMemo(() => {
+    if (!searchTerm.trim()) return customers;
+    
+    const term = searchTerm.toLowerCase();
+    return customers.filter(customer => 
+      customer.name.toLowerCase().includes(term) ||
+      customer.phone.toLowerCase().includes(term) ||
+      customer.address.toLowerCase().includes(term) ||
+      customer.addedBy?.name.toLowerCase().includes(term)
+    );
+  }, [customers, searchTerm]);
+
+  const clearSearch = () => {
+    setSearchTerm("");
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Customers</h1>
         <button onClick={() => setAddModalOpen(true)} className="bg-[#203462] text-white px-3 py-2 rounded">Add Customer</button>
+      </div>
+
+      {/* Search Bar */}
+      <div className="bg-white dark:bg-gray-800 rounded-md shadow p-4">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search customers by name, phone, address, or added by..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-[#203462] focus:border-transparent"
+          />
+          {searchTerm && (
+            <button
+              onClick={clearSearch}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        {searchTerm && (
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Showing {filteredCustomers.length} of {customers.length} customers
+          </div>
+        )}
       </div>
 
       <div className="overflow-auto bg-white dark:bg-gray-800 rounded-md shadow">
@@ -95,7 +143,7 @@ export default function CustomersPage() {
             </tr>
           </thead>
           <tbody>
-            {customers.map((c) => (
+            {filteredCustomers.map((c) => (
               <tr key={c._id} className="border-t dark:border-gray-700">
                 <td className="p-3">{c.name}</td>
                 <td className="p-3">{c.phone}</td>
@@ -118,6 +166,20 @@ export default function CustomersPage() {
                 </td>
               </tr>
             ))}
+            {filteredCustomers.length === 0 && searchTerm && (
+              <tr>
+                <td colSpan={7} className="p-8 text-center text-gray-500 dark:text-gray-400">
+                  No customers found matching "{searchTerm}"
+                </td>
+              </tr>
+            )}
+            {filteredCustomers.length === 0 && !searchTerm && (
+              <tr>
+                <td colSpan={7} className="p-8 text-center text-gray-500 dark:text-gray-400">
+                  No customers found
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
