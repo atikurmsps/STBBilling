@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { Customer } from "@/models/Customer";
 import { STB } from "@/models/STB";
@@ -7,7 +7,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 
 export async function GET(
-  _req: Request,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   await connectToDatabase();
@@ -24,7 +24,7 @@ export async function GET(
 }
 
 export async function DELETE(
-  _req: Request,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   await connectToDatabase();
@@ -47,7 +47,7 @@ export async function DELETE(
 }
 
 export async function PUT(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   await connectToDatabase();

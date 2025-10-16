@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { STB } from "@/models/STB";
 import { Transaction } from "@/models/Transaction";
@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 
 export async function PUT(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   await connectToDatabase();
@@ -43,7 +43,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: Request,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   await connectToDatabase();
