@@ -3,7 +3,7 @@ import type { NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { connectToDatabase } from "@/lib/db";
 import { User as UserModel, UserRole } from "@/models/User";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 declare module "next-auth" {
   interface Session {
