@@ -20,7 +20,7 @@ async function getMetrics() {
       },
     ]),
   ]);
-  const agg = (sums as any[])[0] || { totalDue: 0, totalCollected: 0 };
+  const agg: { totalDue: number, totalCollected: number } = (sums as any[])[0] || { totalDue: 0, totalCollected: 0 };
   return {
     totalCustomers,
     totalSTB,

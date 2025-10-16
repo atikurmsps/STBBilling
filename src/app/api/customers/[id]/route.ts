@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { Customer } from "@/models/Customer";
 import { STB } from "@/models/STB";
-import { Transaction } from "@/models/Transaction";
-import { User } from "@/models/User";
+import { Transaction, ITransaction } from "@/models/Transaction";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
 
@@ -20,7 +19,7 @@ export async function GET(
     .populate("addedBy", "name")
     .lean();
 
-  const balance = transactions.reduce((acc: number, t: any) => acc + t.amount, 0);
+  const balance = transactions.reduce((acc: number, t: ITransaction) => acc + (t.type === 'AddFund' ? t.amount : -t.amount), 0);
   return NextResponse.json({ customer, stbs, transactions, balance });
 }
 

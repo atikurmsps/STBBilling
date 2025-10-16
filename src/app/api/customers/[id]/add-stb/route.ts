@@ -21,7 +21,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   });
   // Charge transaction (negative amount)
   await Transaction.create({
-    customerId: params.id as any,
+    customerId: params.id,
     stbId: stb._id,
     type: "Charge",
     amount: -Math.abs(Number(body.amount || 0)),

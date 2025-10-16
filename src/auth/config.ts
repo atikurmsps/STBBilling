@@ -1,18 +1,29 @@
-import type { DefaultSession } from "next-auth";
+import type { DefaultSession, User as NextAuthUser } from "next-auth";
 import type { NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { connectToDatabase } from "@/lib/db";
-import { User } from "@/models/User";
+import { User, UserRole } from "@/models/User";
 import bcrypt from "bcrypt";
 
 declare module "next-auth" {
   interface Session {
     user: DefaultSession["user"] & {
       id: string;
-      role: "ADMIN" | "EDITOR";
+      role: UserRole;
       name: string;
       email: string;
     };
+  }
+
+  interface User extends NextAuthUser {
+    role: UserRole;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role: UserRole;
+    uid: string;
   }
 }
 
@@ -38,25 +49,25 @@ export const authOptions: NextAuthOptions = {
           name: userDoc.name,
           email: userDoc.email,
           role: userDoc.role,
-        } as any;
+        };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as any).role;
-        token.uid = (user as any).id;
+        token.role = user.role;
+        token.uid = user.id;
       }
       return token;
     },
     async session({ session, token }) {
       session.user = {
-        id: String(token.uid),
-        role: (token as any).role,
+        id: token.uid,
+        role: token.role,
         name: session.user?.name || "",
         email: session.user?.email || "",
-      } as any;
+      };
       return session;
     },
   },

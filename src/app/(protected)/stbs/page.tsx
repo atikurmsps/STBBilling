@@ -2,8 +2,23 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+type STB = {
+  _id: string;
+  stbId: string;
+  amount: number;
+  createdAt: string;
+  note?: string;
+  customerId: string;
+  addedBy?: {
+    name: string;
+  };
+  customer?: {
+    name: string;
+  };
+};
+
 export default function StbsPage() {
-  const [stbs, setStbs] = useState<any[]>([]);
+  const [stbs, setStbs] = useState<STB[]>([]);
   const [q, setQ] = useState("");
 
   const load = async () => {

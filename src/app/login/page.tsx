@@ -16,7 +16,7 @@ export default function LoginPage() {
       redirect: true,
       callbackUrl: "/",
     });
-    if ((res as any)?.error) setError((res as any).error);
+    if (res?.error) setError(res.error);
   };
 
   return (

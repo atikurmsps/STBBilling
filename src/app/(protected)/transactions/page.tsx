@@ -1,8 +1,22 @@
 "use client";
 import { useEffect, useState } from "react";
 
+type Transaction = {
+  _id: string;
+  createdAt: string;
+  type: 'Charge' | 'AddFund';
+  amount: number;
+  note?: string;
+  addedBy?: {
+    name: string;
+  };
+  customer?: {
+    name: string;
+  };
+};
+
 export default function TransactionsPage() {
-  const [txs, setTxs] = useState<any[]>([]);
+  const [txs, setTxs] = useState<Transaction[]>([]);
 
   const load = async () => {
     const res = await fetch("/api/transactions", { cache: "no-store" });

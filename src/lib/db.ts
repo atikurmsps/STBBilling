@@ -6,9 +6,12 @@ if (!MONGODB_URI) {
   throw new Error("MONGODB_URI is not set in environment variables");
 }
 
-let cached = (global as any).mongoose as
-  | { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null }
-  | undefined;
+interface MongooseCache {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
+
+let cached: MongooseCache | undefined = (global as any).mongoose;
 
 if (!cached) {
   cached = (global as any).mongoose = { conn: null, promise: null };

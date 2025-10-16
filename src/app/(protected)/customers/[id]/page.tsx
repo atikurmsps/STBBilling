@@ -1,32 +1,71 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+
+type PopulatedAddedBy = {
+  _id: string;
+  name: string;
+};
+
+interface CustomerData {
+  _id: string;
+  name: string;
+  phone: string;
+  address: string;
+}
+
+interface STBData {
+  _id: string;
+  stbId: string;
+  customerCode?: string;
+  amount: number;
+  note?: string;
+  createdAt: string;
+  addedBy?: PopulatedAddedBy;
+}
+
+interface TransactionData {
+  _id: string;
+  type: 'Charge' | 'AddFund';
+  amount: number;
+  note?: string;
+  createdAt: string;
+  addedBy?: PopulatedAddedBy;
+  stbId?: string;
+}
+
+interface PageData {
+  customer: CustomerData;
+  stbs: STBData[];
+  transactions: TransactionData[];
+  balance: number;
+}
 
 export default function CustomerProfilePage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
   const { data: session } = useSession();
   const user = session?.user;
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<PageData | null>(null);
   const [openSTB, setOpenSTB] = useState(false);
   const [openFund, setOpenFund] = useState(false);
   const [openEditSTB, setOpenEditSTB] = useState(false);
   const [openEditTx, setOpenEditTx] = useState(false);
-  const [currentSTB, setCurrentSTB] = useState<any>(null);
-  const [currentTx, setCurrentTx] = useState<any>(null);
+  const [currentSTB, setCurrentSTB] = useState<STBData | null>(null);
+  const [currentTx, setCurrentTx] = useState<TransactionData | null>(null);
   const [stbForm, setStbForm] = useState({ stbId: "", amount: "", note: "", customerCode: "" });
   const [fundForm, setFundForm] = useState({ amount: "", note: "" });
   const [txForm, setTxForm] = useState({ amount: "", note: "" });
 
-  const load = async () => {
+  const load = useCallback(async () => {
     const res = await fetch(`/api/customers/${id}`, { cache: "no-store" });
     setData(await res.json());
-  };
+  }, [id]);
 
   useEffect(() => {
     if (id) load();
-  }, [id]);
+  }, [id, load]);
 
   const addSTB = async () => {
     await fetch(`/api/customers/${id}/add-stb`, {
@@ -39,13 +78,13 @@ export default function CustomerProfilePage() {
     load();
   };
 
-  const openEditSTBModal = (stb: any) => {
+  const openEditSTBModal = (stb: STBData) => {
     setCurrentSTB(stb);
     setStbForm({
       stbId: stb.stbId,
-      amount: stb.amount,
-      note: stb.note,
-      customerCode: stb.customerCode,
+      amount: String(stb.amount),
+      note: stb.note || '',
+      customerCode: stb.customerCode || '',
     });
     setOpenEditSTB(true);
   };
@@ -70,13 +109,13 @@ export default function CustomerProfilePage() {
     }
   };
 
-  const openEditTxModal = (tx: any) => {
+  const openEditTxModal = (tx: TransactionData) => {
     if (tx.stbId) {
       alert("This is a charge for an STB. Please edit the STB directly to change the amount.");
       return;
     }
     setCurrentTx(tx);
-    setTxForm({ amount: tx.amount, note: tx.note });
+    setTxForm({ amount: String(tx.amount), note: tx.note || '' });
     setOpenEditTx(true);
   };
 
@@ -93,7 +132,7 @@ export default function CustomerProfilePage() {
     load();
   };
 
-  const deleteTx = async (tx: any) => {
+  const deleteTx = async (tx: TransactionData) => {
     if (tx.stbId) {
       alert("This is a charge for an STB. Please delete the STB instead to remove this charge.");
       return;
@@ -150,7 +189,7 @@ export default function CustomerProfilePage() {
             </tr>
           </thead>
           <tbody>
-            {stbs.map((s: any) => (
+            {stbs.map((s) => (
               <tr key={s._id} className="border-t dark:border-gray-700">
                 <td className="p-3">{s.stbId}</td>
                 <td className="p-3">{s.customerCode}</td>
@@ -185,7 +224,7 @@ export default function CustomerProfilePage() {
             </tr>
           </thead>
           <tbody>
-            {transactions.map((t: any) => (
+            {transactions.map((t) => (
               <tr key={t._id} className="border-t dark:border-gray-700">
                 <td className="p-3">{new Date(t.createdAt).toLocaleString()}</td>
                 <td className="p-3">{t.type}</td>

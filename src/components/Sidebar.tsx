@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Users, Cable, ReceiptText, LogOut, Shield } from "lucide-react";
+import { LayoutGrid, Users, Cable, ReceiptText, LogOut, Shield, LucideProps } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useSidebar } from "./SidebarProvider";
+import { ForwardRefExoticComponent, RefAttributes } from "react";
 
 const MENU_BG = "#203462";
 
-const NavItem = ({ href, label, icon: Icon }: { href: string; label: string; icon: any }) => {
+const NavItem = ({ href, label, icon: Icon }: { href: string; label: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>> }) => {
   const pathname = usePathname();
   const active = pathname === href || pathname?.startsWith(href + "/");
   const { setSidebarOpen } = useSidebar();
@@ -35,7 +36,7 @@ const NavItem = ({ href, label, icon: Icon }: { href: string; label: string; ico
 export default function Sidebar() {
   const { isOpen, setSidebarOpen } = useSidebar();
   const { data } = useSession();
-  const role = (data?.user as any)?.role;
+  const role = data?.user?.role;
 
   const handleSignOut = () => {
     setSidebarOpen(false);

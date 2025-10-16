@@ -3,12 +3,19 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 
+type User = {
+  _id: string;
+  name: string;
+  email: string;
+  role: 'ADMIN' | 'EDITOR';
+};
+
 export default function UsersPage() {
   const { data } = useSession();
-  const role = (data?.user as any)?.role;
+  const role = data?.user?.role;
   if (role !== "ADMIN") redirect("/");
 
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "EDITOR" });
 

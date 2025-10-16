@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
-import { Customer } from "@/models/Customer";
+import { Customer, ICustomer } from "@/models/Customer";
 import { Transaction } from "@/models/Transaction";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
+import { Types } from "mongoose";
 
 export async function GET() {
   await connectToDatabase();
   const customers = await Customer.find().populate("addedBy", "name").lean();
-  const customerIds = customers.map((c: any) => c._id);
-  const txAgg = await Transaction.aggregate([
+  const customerIds = customers.map((c: ICustomer & { _id: Types.ObjectId }) => c._id);
+  const txAgg: { _id: Types.ObjectId, balance: number }[] = await Transaction.aggregate([
     { $match: { customerId: { $in: customerIds } } },
     {
       $group: {
@@ -27,8 +28,8 @@ export async function GET() {
     },
   ]);
   const idToBalance = new Map<string, number>();
-  txAgg.forEach((a: any) => idToBalance.set(String(a._id), a.balance));
-  const result = customers.map((c: any) => ({
+  txAgg.forEach((a) => idToBalance.set(String(a._id), a.balance));
+  const result = customers.map((c) => ({
     ...c,
     balance: idToBalance.get(String(c._id)) || 0,
   }));
