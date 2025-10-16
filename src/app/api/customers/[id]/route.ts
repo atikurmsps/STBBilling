@@ -8,8 +8,9 @@ import { authOptions } from "@/auth/config";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
   await connectToDatabase();
   const customer = await Customer.findById(params.id).lean();
   if (!customer) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -25,8 +26,9 @@ export async function GET(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
   await connectToDatabase();
   const { id } = params;
 
@@ -48,8 +50,9 @@ export async function DELETE(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
   await connectToDatabase();
   const { id } = params;
   const body = await req.json();

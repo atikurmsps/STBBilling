@@ -7,8 +7,9 @@ import { authOptions } from "@/auth/config";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
   await connectToDatabase();
   const { id } = params;
   const body = await req.json();
@@ -44,8 +45,9 @@ export async function PUT(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
   await connectToDatabase();
   const { id } = params;
 
