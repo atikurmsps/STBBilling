@@ -15,13 +15,7 @@ export async function GET() {
       $group: {
         _id: "$customerId",
         balance: {
-          $sum: {
-            $cond: [
-              { $eq: ["$type", "AddFund"] },
-              "$amount",
-              { $multiply: ["$amount", 1] },
-            ],
-          },
+          $sum: "$amount",
         },
       },
     },
