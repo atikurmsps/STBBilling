@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     name: body.name,
     email: body.email,
     password: passwordHash,
-    role: body.role === "ADMIN" ? "ADMIN" : "EDITOR",
+    role: body.role === "ADMIN" ? "ADMIN" : body.role === "INACTIVE" ? "INACTIVE" : "EDITOR",
   });
   return NextResponse.json({
     _id: created._id,

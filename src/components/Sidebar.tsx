@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Users, Cable, ReceiptText, LogOut, Shield, LucideProps } from "lucide-react";
+import { LayoutGrid, Users, Cable, ReceiptText, LogOut, Shield, KeyRound, LucideProps } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useSidebar } from "./SidebarProvider";
 import { ForwardRefExoticComponent, RefAttributes } from "react";
@@ -59,6 +59,7 @@ export default function Sidebar() {
           <NavItem href="/stbs" label="STB List" icon={Cable} />
           <NavItem href="/transactions" label="Transactions" icon={ReceiptText} />
           {role === "ADMIN" && <NavItem href="/users" label="Users" icon={Shield} />}
+          <NavItem href="/change-password" label="Change Password" icon={KeyRound} />
           <button
             onClick={handleSignOut}
             className="flex items-center gap-3 px-3 py-2 rounded-md text-gray-100 hover:bg-[#2a4580] text-left w-full"

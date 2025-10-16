@@ -20,6 +20,18 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Redirect inactive users to inactive page
+  if (token.role === "INACTIVE" && pathname !== "/inactive") {
+    const inactiveUrl = new URL("/inactive", req.url);
+    return NextResponse.redirect(inactiveUrl);
+  }
+
+  // Redirect non-inactive users away from inactive page
+  if (pathname === "/inactive" && token.role !== "INACTIVE") {
+    const homeUrl = new URL("/", req.url);
+    return NextResponse.redirect(homeUrl);
+  }
+
   return NextResponse.next();
 }
 
