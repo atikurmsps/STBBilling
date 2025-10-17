@@ -1,5 +1,5 @@
 import { connectToDatabase } from "@/lib/db";
-import { Settings } from "@/models/Settings";
+import { getSingleton } from "@/lib/settings";
 
 function fillTemplate(urlTemplate: string, admin: string, customer: string, message: string) {
   // Handle the case where we want to send to both admin and customer
@@ -34,7 +34,7 @@ function fillTemplate(urlTemplate: string, admin: string, customer: string, mess
 
 export async function sendSmsTo(admin: string | undefined, customer: string | undefined, message: string) {
   await connectToDatabase();
-  const settings = await Settings.findOne().lean();
+  const settings = await getSingleton();
   if (!settings || !settings.smsEnabled) return { skipped: true };
   
   try {

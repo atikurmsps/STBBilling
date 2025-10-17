@@ -3,7 +3,7 @@ import { connectToDatabase } from "@/lib/db";
 import { STB } from "@/models/STB";
 import { Transaction } from "@/models/Transaction";
 import { Customer } from "@/models/Customer";
-import { Settings } from "@/models/Settings";
+import { getSingleton } from "@/lib/settings";
 import { sendSmsTo } from "@/lib/sms";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
@@ -34,10 +34,10 @@ export async function POST(req: NextRequest, context: { params: { id: string } }
   });
   // SMS notifications (best-effort)
   try {
-    const settings = await Settings.findOne().lean();
+    const settings = await getSingleton();
     if (settings?.smsEnabled) {
       const amountStr = Number(body.amount || 0).toFixed(2);
-      const customerDoc = await Customer.findById(params.id).lean();
+      const customerDoc = await Customer.findById(params.id).lean() as any;
       const customerPhone = customerDoc?.phone;
       const customerMsg = (settings.smsTemplates?.addStbCustomer || `A new STB has been added. Charge: [AMOUNT].`)
         .replaceAll('[AMOUNT]', amountStr)

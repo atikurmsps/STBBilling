@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { Transaction } from "@/models/Transaction";
 import { Customer } from "@/models/Customer";
-import { Settings } from "@/models/Settings";
+import { getSingleton } from "@/lib/settings";
 import { sendSmsTo } from "@/lib/sms";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
@@ -23,10 +23,10 @@ export async function POST(req: NextRequest, context: { params: { id: string } }
   });
   // SMS notifications (best-effort, non-blocking)
   try {
-    const settings = await Settings.findOne().lean();
+    const settings = await getSingleton();
     if (settings?.smsEnabled) {
       const amountStr = Number(body.amount || 0).toFixed(2);
-      const customerDoc = await Customer.findById(params.id).lean();
+      const customerDoc = await Customer.findById(params.id).lean() as any;
       const customerPhone = customerDoc?.phone;
       const customerMsg = (settings.smsTemplates?.addFundCustomer || `Your account has been credited with [AMOUNT]. Thank you.`)
         .replaceAll('[AMOUNT]', amountStr)
