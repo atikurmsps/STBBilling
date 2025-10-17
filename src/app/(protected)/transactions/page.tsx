@@ -16,17 +16,34 @@ type Transaction = {
   };
 };
 
+type Pagination = {
+  currentPage: number;
+  totalPages: number;
+  totalTransactions: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+};
+
 export default function TransactionsPage() {
   const [txs, setTxs] = useState<Transaction[]>([]);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const load = async () => {
-    const res = await fetch("/api/transactions", { cache: "no-store" });
-    setTxs(await res.json());
+  const load = async (page = currentPage) => {
+    const res = await fetch(`/api/transactions?page=${page}&limit=25`, { cache: "no-store" });
+    const data = await res.json();
+    setTxs(data.transactions);
+    setPagination(data.pagination);
   };
 
   useEffect(() => {
     load();
   }, []);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    load(page);
+  };
 
   return (
     <div className="space-y-4">
@@ -65,6 +82,55 @@ export default function TransactionsPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Controls */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-md shadow p-4">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            Showing {((pagination.currentPage - 1) * 25) + 1} to {Math.min(pagination.currentPage * 25, pagination.totalTransactions)} of {pagination.totalTransactions} transactions
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handlePageChange(pagination.currentPage - 1)}
+              disabled={!pagination.hasPrevPage}
+              className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Previous
+            </button>
+            
+            {/* Page Numbers */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                const startPage = Math.max(1, pagination.currentPage - 2);
+                const pageNum = startPage + i;
+                if (pageNum > pagination.totalPages) return null;
+                
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`px-3 py-1 border rounded ${
+                      pageNum === pagination.currentPage
+                        ? 'bg-[#203462] text-white border-[#203462]'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+            
+            <button
+              onClick={() => handlePageChange(pagination.currentPage + 1)}
+              disabled={!pagination.hasNextPage}
+              className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

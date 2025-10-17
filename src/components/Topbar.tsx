@@ -17,7 +17,7 @@ export default function Topbar() {
         >
           <Menu size={24} />
         </button>
-        <div className="font-semibold">STB Billing System</div>
+        <div className="font-semibold">Dipa Cable Network</div>
       </div>
       <div className="text-sm text-gray-600 dark:text-gray-300">{name}</div>
     </header>

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Users, Cable, ReceiptText, LogOut, Shield, KeyRound, BarChart3, LucideProps } from "lucide-react";
+import { LayoutGrid, Users, Cable, ReceiptText, LogOut, Shield, KeyRound, BarChart3, LucideProps, Settings as SettingsIcon } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useSidebar } from "./SidebarProvider";
 import { ForwardRefExoticComponent, RefAttributes } from "react";
@@ -47,12 +47,12 @@ export default function Sidebar() {
     <>
       {/* Drawer */}
       <aside
-        className={`fixed md:static z-40 top-0 left-0 h-screen w-64 p-4 transition-transform ${
+        className={`fixed md:static z-40 top-0 left-0 min-h-screen w-64 p-4 transition-transform ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0`}
-        style={{ backgroundColor: MENU_BG }}
+        style={{ backgroundColor: MENU_BG, minHeight: '100vh' }}
       >
-        <div className="text-white text-lg font-semibold mb-4">STB Billing System</div>
+        <div className="text-white text-lg font-semibold mb-4">Dipa Cable Network</div>
         <nav className="flex flex-col gap-1">
           <NavItem href="/" label="Dashboard" icon={LayoutGrid} />
           <NavItem href="/customers" label="Customers" icon={Users} />
@@ -60,6 +60,7 @@ export default function Sidebar() {
           <NavItem href="/transactions" label="Transactions" icon={ReceiptText} />
           <NavItem href="/reports" label="Reports" icon={BarChart3} />
           {role === "ADMIN" && <NavItem href="/users" label="Users" icon={Shield} />}
+          {role === "ADMIN" && <NavItem href="/settings" label="Settings" icon={SettingsIcon} />}
           <NavItem href="/change-password" label="Change Password" icon={KeyRound} />
           <button
             onClick={handleSignOut}

@@ -57,6 +57,12 @@ export default function CustomerProfilePage() {
   const [stbForm, setStbForm] = useState({ stbId: "", amount: "", note: "", customerCode: "" });
   const [fundForm, setFundForm] = useState({ amount: "", note: "" });
   const [txForm, setTxForm] = useState({ amount: "", note: "" });
+  
+  // Loading states
+  const [addingFund, setAddingFund] = useState(false);
+  const [addingSTB, setAddingSTB] = useState(false);
+  const [updatingSTB, setUpdatingSTB] = useState(false);
+  const [updatingTx, setUpdatingTx] = useState(false);
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/customers/${id}`, { cache: "no-store" });
@@ -68,14 +74,22 @@ export default function CustomerProfilePage() {
   }, [id, load]);
 
   const addSTB = async () => {
-    await fetch(`/api/customers/${id}/add-stb`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(stbForm),
-    });
-    setOpenSTB(false);
-    setStbForm({ stbId: "", amount: "", note: "", customerCode: "" });
-    load();
+    if (addingSTB) return; // Prevent multiple submissions
+    setAddingSTB(true);
+    try {
+      await fetch(`/api/customers/${id}/add-stb`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(stbForm),
+      });
+      setOpenSTB(false);
+      setStbForm({ stbId: "", amount: "", note: "", customerCode: "" });
+      load();
+    } catch (error) {
+      console.error("Error adding STB:", error);
+    } finally {
+      setAddingSTB(false);
+    }
   };
 
   const openEditSTBModal = (stb: STBData) => {
@@ -90,16 +104,23 @@ export default function CustomerProfilePage() {
   };
 
   const handleUpdateSTB = async () => {
-    if (!currentSTB) return;
-    await fetch(`/api/stbs/${currentSTB._id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(stbForm),
-    });
-    setOpenEditSTB(false);
-    setCurrentSTB(null);
-    setStbForm({ stbId: "", amount: "", note: "", customerCode: "" });
-    load();
+    if (!currentSTB || updatingSTB) return;
+    setUpdatingSTB(true);
+    try {
+      await fetch(`/api/stbs/${currentSTB._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(stbForm),
+      });
+      setOpenEditSTB(false);
+      setCurrentSTB(null);
+      setStbForm({ stbId: "", amount: "", note: "", customerCode: "" });
+      load();
+    } catch (error) {
+      console.error("Error updating STB:", error);
+    } finally {
+      setUpdatingSTB(false);
+    }
   };
 
   const deleteSTB = async (stbId: string) => {
@@ -120,16 +141,23 @@ export default function CustomerProfilePage() {
   };
 
   const handleUpdateTx = async () => {
-    if (!currentTx) return;
-    await fetch(`/api/transactions/${currentTx._id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(txForm),
-    });
-    setOpenEditTx(false);
-    setCurrentTx(null);
-    setTxForm({ amount: "", note: "" });
-    load();
+    if (!currentTx || updatingTx) return;
+    setUpdatingTx(true);
+    try {
+      await fetch(`/api/transactions/${currentTx._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(txForm),
+      });
+      setOpenEditTx(false);
+      setCurrentTx(null);
+      setTxForm({ amount: "", note: "" });
+      load();
+    } catch (error) {
+      console.error("Error updating transaction:", error);
+    } finally {
+      setUpdatingTx(false);
+    }
   };
 
   const deleteTx = async (tx: TransactionData) => {
@@ -144,14 +172,22 @@ export default function CustomerProfilePage() {
   };
 
   const addFund = async () => {
-    await fetch(`/api/customers/${id}/add-fund`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(fundForm),
-    });
-    setOpenFund(false);
-    setFundForm({ amount: "", note: "" });
-    load();
+    if (addingFund) return; // Prevent multiple submissions
+    setAddingFund(true);
+    try {
+      await fetch(`/api/customers/${id}/add-fund`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(fundForm),
+      });
+      setOpenFund(false);
+      setFundForm({ amount: "", note: "" });
+      load();
+    } catch (error) {
+      console.error("Error adding fund:", error);
+    } finally {
+      setAddingFund(false);
+    }
   };
 
   if (!data) return null;
@@ -249,13 +285,53 @@ export default function CustomerProfilePage() {
         <div className="fixed inset-0 bg-black/40 grid place-items-center">
           <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-md p-4 space-y-3">
             <div className="text-lg font-semibold">Add STB</div>
-            <input placeholder="STB ID" className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" value={stbForm.stbId} onChange={(e) => setStbForm({ ...stbForm, stbId: e.target.value })} />
-            <input placeholder="Customer Code (optional)" className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" value={stbForm.customerCode} onChange={(e) => setStbForm({ ...stbForm, customerCode: e.target.value })} />
-            <input placeholder="Amount" type="number" className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" value={stbForm.amount} onChange={(e) => setStbForm({ ...stbForm, amount: e.target.value })} />
-            <input placeholder="Note" className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" value={stbForm.note} onChange={(e) => setStbForm({ ...stbForm, note: e.target.value })} />
+            <input 
+              placeholder="STB ID" 
+              className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" 
+              value={stbForm.stbId} 
+              onChange={(e) => setStbForm({ ...stbForm, stbId: e.target.value })}
+              disabled={addingSTB}
+            />
+            <input 
+              placeholder="Customer Code (optional)" 
+              className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" 
+              value={stbForm.customerCode} 
+              onChange={(e) => setStbForm({ ...stbForm, customerCode: e.target.value })}
+              disabled={addingSTB}
+            />
+            <input 
+              placeholder="Amount" 
+              type="number" 
+              className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" 
+              value={stbForm.amount} 
+              onChange={(e) => setStbForm({ ...stbForm, amount: e.target.value })}
+              disabled={addingSTB}
+            />
+            <input 
+              placeholder="Note" 
+              className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" 
+              value={stbForm.note} 
+              onChange={(e) => setStbForm({ ...stbForm, note: e.target.value })}
+              disabled={addingSTB}
+            />
             <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setOpenSTB(false)} className="px-3 py-2">Cancel</button>
-              <button onClick={addSTB} className="bg-[#203462] text-white px-3 py-2 rounded">Save</button>
+              <button 
+                onClick={() => setOpenSTB(false)} 
+                className="px-3 py-2"
+                disabled={addingSTB}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={addSTB} 
+                className="bg-[#203462] text-white px-3 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                disabled={addingSTB}
+              >
+                {addingSTB && (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                )}
+                {addingSTB ? "Adding..." : "Save"}
+              </button>
             </div>
           </div>
         </div>
@@ -265,13 +341,53 @@ export default function CustomerProfilePage() {
         <div className="fixed inset-0 bg-black/40 grid place-items-center">
           <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-md p-4 space-y-3">
             <div className="text-lg font-semibold">Edit STB</div>
-            <input placeholder="STB ID" className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" value={stbForm.stbId} onChange={(e) => setStbForm({ ...stbForm, stbId: e.target.value })} />
-            <input placeholder="Customer Code (optional)" className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" value={stbForm.customerCode} onChange={(e) => setStbForm({ ...stbForm, customerCode: e.target.value })} />
-            <input placeholder="Amount" type="number" className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" value={stbForm.amount} onChange={(e) => setStbForm({ ...stbForm, amount: e.target.value })} />
-            <input placeholder="Note" className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" value={stbForm.note} onChange={(e) => setStbForm({ ...stbForm, note: e.target.value })} />
+            <input 
+              placeholder="STB ID" 
+              className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" 
+              value={stbForm.stbId} 
+              onChange={(e) => setStbForm({ ...stbForm, stbId: e.target.value })}
+              disabled={updatingSTB}
+            />
+            <input 
+              placeholder="Customer Code (optional)" 
+              className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" 
+              value={stbForm.customerCode} 
+              onChange={(e) => setStbForm({ ...stbForm, customerCode: e.target.value })}
+              disabled={updatingSTB}
+            />
+            <input 
+              placeholder="Amount" 
+              type="number" 
+              className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" 
+              value={stbForm.amount} 
+              onChange={(e) => setStbForm({ ...stbForm, amount: e.target.value })}
+              disabled={updatingSTB}
+            />
+            <input 
+              placeholder="Note" 
+              className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" 
+              value={stbForm.note} 
+              onChange={(e) => setStbForm({ ...stbForm, note: e.target.value })}
+              disabled={updatingSTB}
+            />
             <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setOpenEditSTB(false)} className="px-3 py-2">Cancel</button>
-              <button onClick={handleUpdateSTB} className="bg-[#203462] text-white px-3 py-2 rounded">Update</button>
+              <button 
+                onClick={() => setOpenEditSTB(false)} 
+                className="px-3 py-2"
+                disabled={updatingSTB}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleUpdateSTB} 
+                className="bg-[#203462] text-white px-3 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                disabled={updatingSTB}
+              >
+                {updatingSTB && (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                )}
+                {updatingSTB ? "Updating..." : "Update"}
+              </button>
             </div>
           </div>
         </div>
@@ -281,11 +397,39 @@ export default function CustomerProfilePage() {
         <div className="fixed inset-0 bg-black/40 grid place-items-center">
           <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-md p-4 space-y-3">
             <div className="text-lg font-semibold">Add Funds</div>
-            <input placeholder="Amount" type="number" className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" value={fundForm.amount} onChange={(e) => setFundForm({ ...fundForm, amount: e.target.value })} />
-            <input placeholder="Note" className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" value={fundForm.note} onChange={(e) => setFundForm({ ...fundForm, note: e.target.value })} />
+            <input 
+              placeholder="Amount" 
+              type="number" 
+              className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" 
+              value={fundForm.amount} 
+              onChange={(e) => setFundForm({ ...fundForm, amount: e.target.value })}
+              disabled={addingFund}
+            />
+            <input 
+              placeholder="Note" 
+              className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" 
+              value={fundForm.note} 
+              onChange={(e) => setFundForm({ ...fundForm, note: e.target.value })}
+              disabled={addingFund}
+            />
             <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setOpenFund(false)} className="px-3 py-2">Cancel</button>
-              <button onClick={addFund} className="bg-emerald-600 text-white px-3 py-2 rounded">Save</button>
+              <button 
+                onClick={() => setOpenFund(false)} 
+                className="px-3 py-2"
+                disabled={addingFund}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={addFund} 
+                className="bg-emerald-600 text-white px-3 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                disabled={addingFund}
+              >
+                {addingFund && (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                )}
+                {addingFund ? "Adding..." : "Save"}
+              </button>
             </div>
           </div>
         </div>
@@ -295,11 +439,39 @@ export default function CustomerProfilePage() {
         <div className="fixed inset-0 bg-black/40 grid place-items-center">
           <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-md p-4 space-y-3">
             <div className="text-lg font-semibold">Edit Transaction</div>
-            <input placeholder="Amount" type="number" className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" value={txForm.amount} onChange={(e) => setTxForm({ ...txForm, amount: e.target.value })} />
-            <input placeholder="Note" className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" value={txForm.note} onChange={(e) => setTxForm({ ...txForm, note: e.target.value })} />
+            <input 
+              placeholder="Amount" 
+              type="number" 
+              className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" 
+              value={txForm.amount} 
+              onChange={(e) => setTxForm({ ...txForm, amount: e.target.value })}
+              disabled={updatingTx}
+            />
+            <input 
+              placeholder="Note" 
+              className="w-full border rounded px-3 py-2 bg-transparent dark:border-gray-600" 
+              value={txForm.note} 
+              onChange={(e) => setTxForm({ ...txForm, note: e.target.value })}
+              disabled={updatingTx}
+            />
             <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setOpenEditTx(false)} className="px-3 py-2">Cancel</button>
-              <button onClick={handleUpdateTx} className="bg-[#203462] text-white px-3 py-2 rounded">Update</button>
+              <button 
+                onClick={() => setOpenEditTx(false)} 
+                className="px-3 py-2"
+                disabled={updatingTx}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleUpdateTx} 
+                className="bg-[#203462] text-white px-3 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                disabled={updatingTx}
+              >
+                {updatingTx && (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                )}
+                {updatingTx ? "Updating..." : "Update"}
+              </button>
             </div>
           </div>
         </div>

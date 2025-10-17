@@ -13,8 +13,8 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "STB Billing System",
-  description: "Private admin panel for STB billing",
+  title: "Dipa Cable Network",
+  description: "Private admin panel for cable network billing",
 };
 
 export default function RootLayout({
