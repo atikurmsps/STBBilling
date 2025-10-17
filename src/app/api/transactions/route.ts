@@ -9,7 +9,10 @@ export async function GET() {
   const customerIds = Array.from(new Set(txs.map((t: any) => String(t.customerId))));
   const customers = await Customer.find({ _id: { $in: customerIds } }).lean();
   const idToCustomer = new Map(customers.map((c: any) => [String(c._id), c]));
-  const result = txs.map((t: any) => ({ ...t, customer: idToCustomer.get(String(t.customerId)) }));
+  const result = txs.map((t: any) => {
+    const customer = idToCustomer.get(String(t.customerId));
+    return { ...t, customer: customer ? { _id: customer._id, name: customer.name } : undefined };
+  });
   return NextResponse.json(result);
 }
 

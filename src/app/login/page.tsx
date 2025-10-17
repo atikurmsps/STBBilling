@@ -1,21 +1,25 @@
 "use client";
 import { signIn } from "next-auth/react";
 import { FormEvent, useState } from "react";
+import Spinner from "@/components/Spinner";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
     const res = await signIn("credentials", {
       email,
       password,
       redirect: true,
       callbackUrl: "/",
     });
+    setLoading(false);
     if (res?.error) setError(res.error);
   };
 
@@ -49,9 +53,11 @@ export default function LoginPage() {
         {error && <div className="text-red-600 text-sm">{error}</div>}
         <button
           type="submit"
-          className="w-full bg-[#203462] text-white rounded px-3 py-2"
+          disabled={loading}
+          className="w-full bg-[#203462] text-white rounded px-3 py-2 disabled:opacity-60 flex items-center justify-center gap-2"
         >
-          Sign In
+          {loading && <Spinner size={18} />}
+          {loading ? "Signing in..." : "Sign In"}
         </button>
       </form>
     </div>

@@ -11,6 +11,7 @@ type Customer = {
   address: string;
   createdAt: string;
   balance?: number;
+  totalSTB?: number;
   addedBy?: { _id: string; name: string };
 };
 
@@ -148,7 +149,7 @@ export default function CustomersPage() {
                 <td className="p-3">{c.name}</td>
                 <td className="p-3">{c.phone}</td>
                 <td className="p-3">{c.address}</td>
-                <td className="p-3">-</td>
+                <td className="p-3">{typeof c.totalSTB === 'number' ? c.totalSTB : '-'}</td>
                 <td className="p-3">
                   <span className={Number(c.balance || 0) < 0 ? "text-red-600" : "text-green-600"}>
                     {Number(c.balance || 0).toFixed(2)}

@@ -12,6 +12,7 @@ type Transaction = {
   };
   customer?: {
     name: string;
+    _id?: string;
   };
 };
 
@@ -40,6 +41,7 @@ export default function TransactionsPage() {
               <th className="p-3">Amount</th>
               <th className="p-3">Note</th>
               <th className="p-3">Added By</th>
+              <th className="p-3">View</th>
             </tr>
           </thead>
           <tbody>
@@ -51,6 +53,13 @@ export default function TransactionsPage() {
                 <td className={`p-3 ${t.type === 'Charge' ? 'text-red-600' : 'text-green-600'}`}>{Number(t.amount).toFixed(2)}</td>
                 <td className="p-3">{t.note}</td>
                 <td className="p-3">{t.addedBy?.name}</td>
+                <td className="p-3">
+                  {t.customer?._id ? (
+                    <a className="underline" href={`/customers/${t.customer._id}`}>View</a>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

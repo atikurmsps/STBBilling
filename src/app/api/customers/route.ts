@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { Customer } from "@/models/Customer";
+import { STB } from "@/models/STB";
 import { Transaction } from "@/models/Transaction";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth/config";
@@ -9,6 +10,11 @@ export async function GET() {
   await connectToDatabase();
   const customers = await Customer.find().populate("addedBy", "name").lean();
   const customerIds = customers.map((c: any) => c._id);
+  // STB counts per customer
+  const stbAgg = await STB.aggregate([
+    { $match: { customerId: { $in: customerIds } } },
+    { $group: { _id: "$customerId", count: { $sum: 1 } } },
+  ]);
   const txAgg = await Transaction.aggregate([
     { $match: { customerId: { $in: customerIds } } },
     {
@@ -22,9 +28,12 @@ export async function GET() {
   ]);
   const idToBalance = new Map<string, number>();
   txAgg.forEach((a: any) => idToBalance.set(String(a._id), a.balance));
+  const idToStbCount = new Map<string, number>();
+  stbAgg.forEach((a: any) => idToStbCount.set(String(a._id), a.count));
   const result = customers.map((c: any) => ({
     ...c,
     balance: idToBalance.get(String(c._id)) || 0,
+    totalSTB: idToStbCount.get(String(c._id)) || 0,
   }));
   return NextResponse.json(result);
 }
